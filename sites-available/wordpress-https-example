@@ -1,0 +1,48 @@
+access_log /path/to/desired/log/file full;
+
+# Ensure the HTTP version issues a 301 redirect to the HTTPS version of the
+# website. It also includes Let's Encrypt as the HTTPS version will be useless
+# first time around as the certificate is needing to be issued ... and it can't
+# without this!
+server {
+	listen 80;
+	listen [::]:80;
+
+	server_name DOMAIN;
+
+	location / {
+		return 301 https://DOMAIN$request_uri;
+	}
+
+	include /etc/nginx/parts/letsencrypt.conf;
+}
+
+# HTTPS version of the website. In this we include the standardised
+# configuration for GZIP, SSL, and of course, WordPress. The slight change here
+# is that Nginx will look for an index.html first which can serve as a basic
+# maintenance page mechanism (although the usefulness is debatable...).
+server {
+	listen 443 ssl;
+	listen [::]:443 ssl;
+
+	client_max_body_size 10m;
+
+	include /etc/nginx/parts/gzip.conf;
+
+	server_name DOMAIN;
+
+	# SSL
+	include /etc/nginx/parts/ssl.conf;
+
+	# First time around you will need to comment these lines in order for Nginx
+	# to load the configuration. Once this is activated, the CertBot commands
+	# executed and the SSL generated then you can put them back in.
+	ssl_certificate /etc/letsencrypt/live/DOMAIN/fullchain.pem;
+	ssl_certificate_key /etc/letsencrypt/live/DOMAIN/privkey.pem;
+
+	root /srv/DOMAIN/;
+
+	index index.html index.php;
+
+	include /etc/nginx/parts/wordpress.conf;
+}
