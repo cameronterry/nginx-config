@@ -56,3 +56,12 @@ wp media regenerate
 wp redis enable
 wp user update joe@email.com --user_pass=
 ```
+
+### Misc other useful commands
+
+Install and update plugin from Github (WP-CLI is smart enough to remove the "-release" part of the folder name as well!)
+
+```
+wp plugin install https://github.com/cameronterry/dark-matter/archive/master.zip
+wp plugin install --force https://github.com/cameronterry/dark-matter/archive/master.zip
+```
